@@ -1,10 +1,10 @@
 import os
-from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
-from typing import List, Tuple
-
 import pandas as pd
 import yfinance as yf
+
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta
+from typing import Tuple
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,6 +35,7 @@ def read_time_file(file_path: str) -> list[datetime]:
 
 def search_for_stock(stock: str, dates_path: str):
     search_times = read_time_file(dates_path)
+    print(f"starting to fetch data of {stock}")
 
     with ThreadPoolExecutor(max_workers=50) as executor:
         results = list(executor.map(
@@ -42,12 +43,13 @@ def search_for_stock(stock: str, dates_path: str):
                                                  search_time + timedelta(hours=1)),
             search_times))
 
-    df = pd.DataFrame(results, columns=['Hour', 'Stock', 'Percentage Change'])
-    df.to_csv(DESTINATION_FILE_PATH, index=False)
+    print(f"finished fetching data of {stock}")
+
+    return pd.DataFrame(results, columns=['Timestamp', 'Stock', 'Percentage Change'])
 
 
 def main():
-    search_for_stock("BTC-USD", BITCOIN_DATES_PATH)
+    search_for_stock("BTC-USD", BITCOIN_DATES_PATH).to_csv(DESTINATION_FILE_PATH, index=False)
 
 
 if __name__ == '__main__':
