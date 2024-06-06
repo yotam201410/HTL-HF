@@ -35,11 +35,13 @@ def read_time_file(file_path: str) -> list[datetime]:
 
 def main():
     search_times = read_time_file(BITCOIN_DATES_PATH)
+
     with ThreadPoolExecutor(max_workers=50) as executor:
         results = list(executor.map(
             lambda search_time: fetch_stock_data('BTC-USD', search_time,
                                                  search_time + timedelta(hours=1)),
             search_times))
+
     df = pd.DataFrame(results, columns=['Hour', 'Stock', 'Percentage Change'])
     df.to_csv(DESTINATION_FILE_PATH, index=False)
 
