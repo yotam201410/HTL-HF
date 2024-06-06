@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Tuple
 
 import pandas as pd
 import yfinance as yf
@@ -19,7 +19,7 @@ def convert_to_datetime(date_string: str) -> datetime:
     return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S.%f')
 
 
-def fetch_stock_data(stock: str, start_time: datetime, end_time: datetime):
+def fetch_stock_data(stock: str, start_time: datetime, end_time: datetime) -> Tuple[datetime, str, float]:
     data = yf.Ticker(stock).history(start=start_time, end=end_time)
     open_price = data.iloc[0]['Open']
     close_price = data.iloc[0]['Close']
@@ -33,17 +33,21 @@ def read_time_file(file_path: str) -> list[datetime]:
         return list(map(lambda x: convert_to_datetime(x[:-2]), times_file.readlines()))
 
 
-def main():
-    search_times = read_time_file(BITCOIN_DATES_PATH)
+def search_for_stock(stock: str, dates_path: str):
+    search_times = read_time_file(dates_path)
 
     with ThreadPoolExecutor(max_workers=50) as executor:
         results = list(executor.map(
-            lambda search_time: fetch_stock_data('BTC-USD', search_time,
+            lambda search_time: fetch_stock_data(stock, search_time,
                                                  search_time + timedelta(hours=1)),
             search_times))
 
     df = pd.DataFrame(results, columns=['Hour', 'Stock', 'Percentage Change'])
     df.to_csv(DESTINATION_FILE_PATH, index=False)
+
+
+def main():
+    search_for_stock("BTC-USD", BITCOIN_DATES_PATH)
 
 
 if __name__ == '__main__':
