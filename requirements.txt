@@ -3,3 +3,5 @@ yfinance~=0.2.40
 python-dotenv~=1.0.1
 aiofiles~=23.2.1
 playwright~=1.44.0
+
+SQLAlchemy~=2.0.30
