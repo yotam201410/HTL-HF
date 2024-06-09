@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import pandas as pd
 import yfinance as yf
@@ -33,7 +34,7 @@ def read_time_file(file_path: str) -> list[datetime]:
         return list(map(lambda x: convert_to_datetime(x[:-2]), times_file.readlines()))
 
 
-def search_for_stock(stock: str, dates_path: str):
+def search_for_stock(stock: str, dates_path: str, queue: multiprocessing.Queue):
     search_times = read_time_file(dates_path)
     print(f"starting to fetch data of {stock}")
 
@@ -44,12 +45,27 @@ def search_for_stock(stock: str, dates_path: str):
             search_times))
 
     print(f"finished fetching data of {stock}")
-
-    return pd.DataFrame(results, columns=['Timestamp', 'Stock', 'Percentage Change'])
+    queue.put(pd.DataFrame(results, columns=['Timestamp', 'Stock', 'Percentage Change']))
 
 
 def main():
-    search_for_stock("BTC-USD", BITCOIN_DATES_PATH).to_csv(DESTINATION_FILE_PATH, index=False)
+    queue = multiprocessing.Queue()
+    processes = [multiprocessing.Process(target=search_for_stock, args=("BTC-USD", AMAZON_DATES_PATH, queue)),
+                 multiprocessing.Process(target=search_for_stock, args=("AMZN", AMAZON_DATES_PATH, queue)),
+                 multiprocessing.Process(target=search_for_stock, args=("GOOGL", GOOGLE_DATES_PATH, queue))]
+
+    for process in processes:
+        process.start()
+
+    dfs = []
+
+    for process in processes:
+        dfs.append(queue.get())
+        process.join()
+
+    combined_df = pd.concat(dfs, ignore_index=True)
+    combined_df.to_csv(DESTINATION_FILE_PATH, index=False)
+    print(f"Data has been written to {DESTINATION_FILE_PATH}")
 
 
 if __name__ == '__main__':
