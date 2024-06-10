@@ -1,0 +1,10 @@
+thread - python vs c/cpp
+python uses GIL (global interpreter lock) that makes python use only one single native thread, that means that python cant utlize more then 100% of a core no matter if it has multiple threads. at other languages you can use 
+
+threadPoolExecuter - has a pool of threads that are available and when requesting has a queue of who requested a thread once a thread is available excutes from the queue 
+
+is thread actully parllel - at python, no at othe languages depends on the computer specs if it has multiple cores then yes but if it has a single core then no, and it only gives the feel of a parllel programing.
+
+column vs mapped column  - column was used at the core level and ORM level this created a conflict of porpuse, MappedColumn replaced Column at the ORM level.
+
+declarative base - a base class that utlizes a factory to handle the modles.
