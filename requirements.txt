@@ -5,3 +5,4 @@ aiofiles~=23.2.1
 playwright~=1.44.0
 
 SQLAlchemy~=2.0.30
+pydantic~=2.7.3
