@@ -15,7 +15,7 @@ class Video(Base):
     frame_count: Mapped[int] = mapped_column(Integer, CheckConstraint('frame_count>0'), nullable=False)
     storage_path: Mapped[str] = mapped_column(Text, nullable=False)
 
-    frames: Mapped["Frame"] = relationship("Frame", back_populates="video")
+    frames: Mapped[list["Frame"]] = relationship("Frame", back_populates="video", cascade="all, delete-orphan", lazy='selectin')
 
     def __repr__(self):
         return f"<Video(id={self.id}, observation_name={self.observation_name}, frame_count={self.frame_count})>"
