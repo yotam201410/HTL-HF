@@ -14,3 +14,7 @@ class Metadata(Base):
     elevation: Mapped[float] = mapped_column(Float, nullable=False)
 
     frames: Mapped["Frame"] = relationship("Frame", back_populates="metadata_")
+
+    def __repr__(self):
+        return f"<Metadata(id={self.id}, tagged={self.tagged}, fov={self.fov}, azimuth={self.azimuth}, elevation={self.elevation})>"
+

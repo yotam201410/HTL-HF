@@ -16,3 +16,6 @@ class Video(Base):
     storage_path: Mapped[str] = mapped_column(Text, nullable=False)
 
     frames: Mapped["Frame"] = relationship("Frame", back_populates="video")
+
+    def __repr__(self):
+        return f"<Video(id={self.id}, observation_name={self.observation_name}, frame_count={self.frame_count})>"

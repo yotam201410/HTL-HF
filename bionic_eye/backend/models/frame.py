@@ -17,3 +17,6 @@ class Frame(Base):
 
     video: Mapped["Video"] = relationship("Video", back_populates="frames")
     metadata_: Mapped["Metadata"] = relationship("Metadata", back_populates="frames")
+
+    def __repr__(self):
+        return f"<Frame(id={self.id}, storage_path={self.storage_path}, frame_index={self.frame_index})>"
