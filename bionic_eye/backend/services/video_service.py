@@ -8,6 +8,7 @@ from fastapi import HTTPException
 
 from cv2 import Mat
 from numpy import ndarray
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bionic_eye.backend.models.frame import Frame
@@ -103,13 +104,23 @@ class VideoService:
         return await self.repository.getVideosPaths()
 
     async def getVideoPath(self, video_id: uuid.UUID):
-        return await self.repository.getVideoPath(video_id)
+        try:
+            return await self.repository.getVideoPath(video_id)
+        except NoResultFound:
+            raise HTTPException(status_code=404, detail=f"video with id: {video_id} not found")
 
     async def getVideoFramesPaths(self, video_id: uuid.UUID):
-        return await self.repository.getVideoFrames(video_id)
+        try:
+            return await self.repository.getVideoFrames(video_id)
+        except NoResultFound:
+            raise HTTPException(status_code=404, detail=f"video with id: {video_id} not found")
 
     async def getVideoFramePath(self, video_id: uuid.UUID, frame_index: int):
-        return await self.repository.getVideoFrame(video_id, frame_index)
+        try:
+            return await self.repository.getVideoFrame(video_id, frame_index)
+        except NoResultFound:
+            raise HTTPException(status_code=404,
+                                detail=f"video with id: {video_id} not found or frame with index: {frame_index} not found")
 
     async def getTaggedFramesFiles(self, video_id: uuid.UUID):
         paths = await self.repository.getFramesPathsWithThreat(video_id)
