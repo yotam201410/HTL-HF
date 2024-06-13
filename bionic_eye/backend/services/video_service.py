@@ -10,6 +10,7 @@ from cv2 import Mat
 from numpy import ndarray
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
+import concurrent.futures
 
 from bionic_eye.backend.models.frame import Frame
 from bionic_eye.backend.models.metadata import Metadata
@@ -68,20 +69,29 @@ def saveFramesAndTag(video_path: str, frames_path: str) -> List[Frame]:
     count = 1
     frames = []
 
-    while success:
-        frame_path = os.path.join(frames_path, f"frame{count}.jpg")
-        cv2.imwrite(frame_path, frame)  # Save frame as JPEG file
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = []
+        while success:
+            futures.append(executor.submit(save_frame_and_metadata, frame, count, frames_path))
+            success, frame = vidcap.read()
+            count += 1
 
-        fov, azimuth, elevation = generate_metadata(frame)
-        tagged = is_frame_tagged(frame)
-        metadata = Metadata(fov=fov, azimuth=azimuth, elevation=elevation, tagged=tagged)
-        frame_obj = Frame(storage_path=frame_path, frame_index=count, metadata_=metadata)
-        frames.append(frame_obj)
-
-        success, frame = vidcap.read()
-        count += 1
+        for future in concurrent.futures.as_completed(futures):
+            frames.append(future.result())
 
     return frames
+
+
+def save_frame_and_metadata(frame, count, frames_path):
+    frame_path = os.path.join(frames_path, f"frame{count}.jpg")
+    cv2.imwrite(frame_path, frame)  # Save frame as JPEG file
+
+    fov, azimuth, elevation = generate_metadata(frame)
+    tagged = is_frame_tagged(frame)
+    metadata = Metadata(fov=fov, azimuth=azimuth, elevation=elevation, tagged=tagged)
+    frame_obj = Frame(storage_path=frame_path, frame_index=count, metadata_=metadata)
+
+    return frame_obj
 
 
 class VideoService:
