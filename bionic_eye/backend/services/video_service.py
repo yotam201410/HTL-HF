@@ -66,13 +66,16 @@ def saveFramesAndTag(video_path: str, frames_path: str) -> List[Frame]:
     success, frame = vidcap.read()
     count = 1
     frames = []
+
     while success:
-        frame_path = os.path.join(frames_path, "frame%d.jpg" % count)
-        cv2.imwrite(frame_path, frame)  # save frame as JPEG file
+        frame_path = os.path.join(frames_path, f"frame{count}.jpg")
+        cv2.imwrite(frame_path, frame)  # Save frame as JPEG file
+
         fov, azimuth, elevation = generate_metadata(frame)
         tagged = is_frame_tagged(frame)
         metadata = Metadata(fov=fov, azimuth=azimuth, elevation=elevation, tagged=tagged)
-        frames.append(Frame(storage_path=frame_path, frame_index=count, metadata=metadata))
+        frame_obj = Frame(storage_path=frame_path, frame_index=count, metadata_=metadata)
+        frames.append(frame_obj)
 
         success, frame = vidcap.read()
         count += 1
@@ -86,14 +89,13 @@ class VideoService:
 
     async def addVideo(self, path: str):
         if not os.path.exists(path):
-            raise HTTPException(status_code=404, detail=f"{path} doesnt exist")
+            raise HTTPException(status_code=404, detail=f"{path} doesn't exist")
 
         filename = os.path.basename(path)
         observation_name = filename[:filename.find('_')]
         os.mkdir(BASE_PATH / observation_name)
         frames = saveFramesAndTag(path, str((BASE_PATH / observation_name)))
-        video = Video(frames=frames, observation_name=observation_name, storage_path=path)
-
+        video = Video(frames=frames, observation_name=observation_name, storage_path=path, frame_count=len(frames))
         await self.repository.createVideo(video)
 
     async def getVideosPath(self):
