@@ -30,8 +30,8 @@ class VideoRepository:
 
     async def getFramesPathsWithThreat(self, video_id: uuid.UUID):
         return (await self.session.execute(
-            select(Frame.storage_path).where(Video.id == video_id, Metadata.frame_tag == True).join(Video,
-                                                                                                    Video.id == Frame.video_id).join(
+            select(Frame.storage_path).where(Video.id == video_id, Metadata.tagged).join(Video,
+                                                                                         Video.id == Frame.video_id).join(
                 Metadata, Metadata.id == Frame.metadata_id))).scalars().all()
 
     async def getVideoFrame(self, video_id: uuid.UUID, frame_index: int):

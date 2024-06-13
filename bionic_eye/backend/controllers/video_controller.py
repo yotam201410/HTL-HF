@@ -1,9 +1,12 @@
+import os.path
 import uuid
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
+
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.responses import FileResponse
 
 from bionic_eye.backend.db import get_db
 from bionic_eye.backend.schemas.video import VideoInput
@@ -17,6 +20,7 @@ async def create_video_handler(video: VideoInput, session: AsyncSession = Depend
     video_service = VideoService(session)
     video = await video_service.addVideo(video.storage_path)
     await session.flush()
+
     return video.id
 
 
@@ -24,6 +28,7 @@ async def create_video_handler(video: VideoInput, session: AsyncSession = Depend
 async def get_video_path_handler(video_id: uuid.UUID, session: AsyncSession = Depends(get_db)) -> Path:
     video_service = VideoService(session)
     path = await video_service.getVideoPath(video_id)
+
     return path
 
 
@@ -31,6 +36,7 @@ async def get_video_path_handler(video_id: uuid.UUID, session: AsyncSession = De
 async def get_videos_paths_handler(session: AsyncSession = Depends(get_db)) -> List[Path]:
     video_service = VideoService(session)
     paths = await video_service.getVideosPath()
+
     return paths
 
 
@@ -38,6 +44,7 @@ async def get_videos_paths_handler(session: AsyncSession = Depends(get_db)) -> L
 async def get_frames_paths(video_id: uuid.UUID, session: AsyncSession = Depends(get_db)) -> List[Path]:
     video_service = VideoService(session)
     paths = await video_service.getVideoFramesPaths(video_id)
+
     return paths
 
 
@@ -45,4 +52,22 @@ async def get_frames_paths(video_id: uuid.UUID, session: AsyncSession = Depends(
 async def get_frame_paths(video_id: uuid.UUID, frame_index: int, session: AsyncSession = Depends(get_db)) -> Path:
     video_service = VideoService(session)
     path = await video_service.getVideoFramePath(video_id, frame_index)
+
     return path
+
+
+@video_router.get("/{video_id}")
+async def download_video_handler(video_id: uuid.UUID, session: AsyncSession = Depends(get_db)) -> FileResponse:
+    video_service = VideoService(session)
+    video_path = await video_service.getVideoPath(video_id)
+
+    return FileResponse(path=video_path, filename=os.path.basename(video_path), media_type='application/octet-stream')
+
+
+@video_router.get("/{video_id}/frames/tagged")
+async def download_tagged_frames(video_id: uuid.UUID, session: AsyncSession = Depends(get_db)):
+    video_service = VideoService(session)
+    zip_data = await video_service.getTaggedFramesFiles(video_id)
+    headers = {"Content-Disposition": "attachment; filename=files.zip"}
+
+    return Response(zip_data, headers=headers, media_type="application/zip")

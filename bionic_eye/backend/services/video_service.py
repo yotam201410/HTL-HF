@@ -128,6 +128,6 @@ class VideoService:
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for path in paths:
-                zip_file.write(path)
+                zip_file.write(path, arcname=os.path.basename(path))  # Use os.path.basename to remove directories
         zip_buffer.seek(0)
         return zip_buffer.getvalue()
