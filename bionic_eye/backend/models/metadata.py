@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy import Boolean, Float, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
@@ -12,3 +12,5 @@ class Metadata(Base):
     fov: Mapped[float] = mapped_column(Float, nullable=False)
     azimuth: Mapped[float] = mapped_column(Float, nullable=False)
     elevation: Mapped[float] = mapped_column(Float, nullable=False)
+
+    frames: Mapped["Frame"] = relationship("Frame", back_populates="metadata_")

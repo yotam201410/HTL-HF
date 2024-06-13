@@ -21,7 +21,7 @@ import numpy as np
 from PIL import Image
 import random
 
-BASE_PATH = Path('bionic_eye\\backend\\resources')
+BASE_PATH = Path('resources')
 
 
 def is_frame_tagged(frame: Mat | ndarray):

@@ -14,3 +14,8 @@ class Video(BaseModel):
     frames: List[Frame]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class VideoInput(BaseModel):
+    storage_path: str = Field(examples=["C:\\Users\\yotam\\Downloads\\Roboto\\Sderot_12_06.mp4"])
+    model_config = ConfigDict(from_attributes=True)

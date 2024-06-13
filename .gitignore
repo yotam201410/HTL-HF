@@ -3,3 +3,4 @@
 *.xml
 /.idea
 *.pyc
+/bionic_eye/backend/resources
