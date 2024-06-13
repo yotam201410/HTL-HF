@@ -9,5 +9,9 @@ opencv-python~=4.10.0.82
 numpy~=1.26.4
 pillow~=10.3.0
 asyncpg
-fastapi~=0.111.0
+fastapi~=0.110.3
 fastapi_profiler
+uvicorn~=0.30.1
+pyinstrument~=4.6.2
+starlette~=0.37.2
+profyle~=0.3.0
