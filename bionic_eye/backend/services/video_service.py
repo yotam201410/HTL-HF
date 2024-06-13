@@ -110,10 +110,11 @@ class VideoService:
             raise HTTPException(status_code=404, detail=f"video with id: {video_id} not found")
 
     async def getVideoFramesPaths(self, video_id: uuid.UUID):
-        try:
-            return await self.repository.getVideoFrames(video_id)
-        except NoResultFound:
-            raise HTTPException(status_code=404, detail=f"video with id: {video_id} not found")
+        frames = await self.repository.getVideoFrames(video_id)
+        if len(frames) == 0:
+            raise HTTPException(status_code=404,
+                                detail=f"video with id: {video_id} not found")
+        return frames
 
     async def getVideoFramePath(self, video_id: uuid.UUID, frame_index: int):
         try:
