@@ -97,6 +97,7 @@ class VideoService:
         frames = saveFramesAndTag(path, str((BASE_PATH / observation_name)))
         video = Video(frames=frames, observation_name=observation_name, storage_path=path, frame_count=len(frames))
         await self.repository.createVideo(video)
+        return video
 
     async def getVideosPath(self):
         return await self.repository.getVideosPaths()

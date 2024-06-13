@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,6 +11,8 @@ video_router = APIRouter(prefix="/videos")
 
 
 @video_router.post("", status_code=201)
-async def create_video_handler(video: VideoInput, session: AsyncSession = Depends(get_db)):
+async def create_video_handler(video: VideoInput, session: AsyncSession = Depends(get_db)) -> uuid.UUID:
     video_service = VideoService(session)
-    await video_service.addVideo(video.storage_path)
+    video = await video_service.addVideo(video.storage_path)
+    await session.flush()
+    return video.id

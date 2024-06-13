@@ -5,6 +5,7 @@ from bionic_eye.backend.controllers.video_controller import video_router
 
 app = FastAPI(
     title="Noted API", description="This is a simple note taking service", docs_url="/")
+
 app.router.include_router(video_router)
 
 if __name__ == "__main__":
