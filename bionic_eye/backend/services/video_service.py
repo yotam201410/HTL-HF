@@ -24,7 +24,7 @@ import numpy as np
 from PIL import Image
 import random
 
-BASE_PATH = Path('resources')
+BASE_PATH = Path('C:\\Users\\yotam\\Documents\\GitHub\\HTL-HF\\bionic_eye\\backend\\resources')
 
 
 def is_frame_tagged(frame: Mat | ndarray):
@@ -108,8 +108,9 @@ class VideoService:
 
         filename = os.path.basename(path)
         observation_name = filename[:filename.find('_')]
-        os.mkdir(BASE_PATH / observation_name)
-        frames = saveFramesAndTag(path, str((BASE_PATH / observation_name)))
+        dir_name = observation_name + str(random.randint(1, 5000))
+        os.mkdir(BASE_PATH / dir_name)
+        frames = saveFramesAndTag(path, str((BASE_PATH / dir_name)))
         video = Video(frames=frames, observation_name=observation_name, storage_path=path, frame_count=len(frames))
         await self.repository.createVideo(video)
         return video

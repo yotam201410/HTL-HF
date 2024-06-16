@@ -11,7 +11,7 @@ url = URL.create(drivername=os.environ.get("DB_TYPE"), username=os.environ.get("
                  password=os.environ.get("DB_PASSWORD"), host=os.environ.get("DB_IP"),
                  database=os.environ.get("DB_NAME"),
                  port=os.environ.get("DB_PORT"))
-engine = create_async_engine(url, echo=True)
+engine = create_async_engine(url, echo=False)
 
 SessionLocal = sessionmaker(
     expire_on_commit=False,
