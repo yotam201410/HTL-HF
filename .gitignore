@@ -4,3 +4,4 @@
 /.idea
 *.pyc
 /bionic_eye/backend/resources
+*.log
