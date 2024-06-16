@@ -1,20 +1,16 @@
 import logging
 import sys
-from colorlog import ColoredFormatter
+import coloredlogs
 
+coloredlogs.install()  # install a handler on the root logger
 logger = logging.getLogger()
 
-formatter = logging.Formatter(fmt="%(levelname)-8s | %(asctime)s - %(funcName)s - "
-                                  "%(message)s")
-colored_formatter = ColoredFormatter(
-    fmt="%(log_color)s%(levelname)-8s%(reset)s | %(log_color)s%(asctime)s - %(funcName)s - "
-        "%(message)s%(reset)s")
-
-stream_handler = logging.StreamHandler()
+formatter = logging.Formatter(fmt="%(levelname)-8s |%(asctime)s - %(funcName)s - %(message)s")
+stream_handler = logging.StreamHandler(stream=sys.stdout)
 file_handler = logging.FileHandler(filename="logs.log")
 
 stream_handler.setFormatter(formatter)
-file_handler.setFormatter(colored_formatter)
+file_handler.setFormatter(formatter)
 
 logger.handlers = [stream_handler, file_handler]
 
