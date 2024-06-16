@@ -99,7 +99,9 @@ class VideoService:
         self.repository = VideoRepository(session)
 
     async def addVideo(self, path: str):
-        if not os.path.exists(path):
+        if not path.endswith(".mp4"):
+            raise HTTPException(status_code=400, detail=f"{path} is not mp4")
+        elif not os.path.exists(path):
             raise HTTPException(status_code=404, detail=f"{path} doesn't exist")
 
         filename = os.path.basename(path)

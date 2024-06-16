@@ -56,7 +56,7 @@ async def get_frame_paths(video_id: uuid.UUID, frame_index: int, session: AsyncS
     return path
 
 
-@video_router.get("/{video_id}")
+@video_router.get("/{video_id}", status_code=200)
 async def download_video_handler(video_id: uuid.UUID, session: AsyncSession = Depends(get_db)) -> FileResponse:
     video_service = VideoService(session)
     video_path = await video_service.getVideoPath(video_id)
@@ -64,7 +64,7 @@ async def download_video_handler(video_id: uuid.UUID, session: AsyncSession = De
     return FileResponse(path=video_path, filename=os.path.basename(video_path), media_type='application/octet-stream')
 
 
-@video_router.get("/{video_id}/frames/tagged")
+@video_router.get("/{video_id}/frames/tagged", status_code=200)
 async def download_tagged_frames(video_id: uuid.UUID, session: AsyncSession = Depends(get_db)):
     video_service = VideoService(session)
     zip_data = await video_service.getTaggedFramesFiles(video_id)
