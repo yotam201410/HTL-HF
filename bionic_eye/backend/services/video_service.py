@@ -79,6 +79,7 @@ def saveFramesAndTag(video_path: str, frames_path: str) -> List[Frame]:
 
         for future in concurrent.futures.as_completed(futures):
             frames.append(future.result())
+    logger.debug(f"saved {len(frames)} frames")
 
     return frames
 
@@ -98,7 +99,6 @@ def save_frame_and_metadata(frame, count, frames_path):
 class VideoService:
     def __init__(self, session: AsyncSession):
         self.repository = VideoRepository(session)
-        self.logger = logger
 
     async def addVideo(self, path: str):
         if not path.endswith(".mp4"):
@@ -117,35 +117,49 @@ class VideoService:
     async def getVideosPath(self):
         paths = await self.repository.getVideosPaths()
 
-        logger.debug(f"found {len(paths)}")
+        logger.debug(f"fetched {len(paths)} video paths")
 
         return paths
 
     async def getVideoPath(self, video_id: uuid.UUID):
         try:
-            return await self.repository.getVideoPath(video_id)
+            path = await self.repository.getVideoPath(video_id)
+            logger.debug(f"fetched video: {video_id} path {path}")
+
+            return path
         except NoResultFound:
             raise HTTPException(status_code=404, detail=f"video with id: {video_id} not found")
 
     async def getVideoFramesPaths(self, video_id: uuid.UUID):
         frames = await self.repository.getVideoFrames(video_id)
+        logger.debug(f"fetched {len(frames)} of video: {video_id}")
+
         if len(frames) == 0:
             raise HTTPException(status_code=404,
                                 detail=f"video with id: {video_id} not found")
+
         return frames
 
     async def getVideoFramePath(self, video_id: uuid.UUID, frame_index: int):
         try:
-            return await self.repository.getVideoFrame(video_id, frame_index)
+            frame = await self.repository.getVideoFrame(video_id, frame_index)
+            logger.info(f"fetched frame number: {frame_index} of video: {video_id}")
+
+            return frame
         except NoResultFound:
             raise HTTPException(status_code=404,
-                                detail=f"video with id: {video_id} not found or frame with index: {frame_index} not found")
+                                detail=f"video with id: {video_id} not found or frame with index: {frame_index} not "
+                                       f"found")
 
     async def getTaggedFramesFiles(self, video_id: uuid.UUID):
         paths = await self.repository.getFramesPathsWithThreat(video_id)
+        logger.debug(f"fetched {len(paths)} frames with target of video: {video_id}")
         zip_buffer = io.BytesIO()
+
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for path in paths:
                 zip_file.write(path, arcname=os.path.basename(path))  # Use os.path.basename to remove directories
+
         zip_buffer.seek(0)
+
         return zip_buffer.getvalue()
