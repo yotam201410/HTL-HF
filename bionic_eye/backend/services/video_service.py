@@ -12,6 +12,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 import concurrent.futures
 
+from bionic_eye.backend.logger import logger
 from bionic_eye.backend.models.frame import Frame
 from bionic_eye.backend.models.metadata import Metadata
 from bionic_eye.backend.models.video import Video
@@ -97,6 +98,7 @@ def save_frame_and_metadata(frame, count, frames_path):
 class VideoService:
     def __init__(self, session: AsyncSession):
         self.repository = VideoRepository(session)
+        self.logger = logger
 
     async def addVideo(self, path: str):
         if not path.endswith(".mp4"):
@@ -113,7 +115,11 @@ class VideoService:
         return video
 
     async def getVideosPath(self):
-        return await self.repository.getVideosPaths()
+        paths = await self.repository.getVideosPaths()
+
+        logger.debug(f"found {len(paths)}")
+
+        return paths
 
     async def getVideoPath(self, video_id: uuid.UUID):
         try:
