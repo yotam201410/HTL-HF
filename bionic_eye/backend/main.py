@@ -17,7 +17,7 @@ async def http_exception_handler(request, exc):
 
     if 400 <= exc.status_code < 500:
         logger.warning(log_dict)
-    elif 400 <= exc.status_code < 500:
+    elif 500 <= exc.status_code < 600:
         logger.critical(log_dict)
 
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
