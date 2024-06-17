@@ -1,7 +1,10 @@
-
 *.ini
 *.xml
 /.idea
 *.pyc
-/bionic_eye/backend/resources
+/bionic_eye/backend/resources/*
+!/bionic_eye/backend/resources/fake
+!/bionic_eye/backend/resources/fake/*
 *.log
+/bionic_eye/backend/profiles/*.html
+/bionic_eye/backend/tests/profiles/*.html
