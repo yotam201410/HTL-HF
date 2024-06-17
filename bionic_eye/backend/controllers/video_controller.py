@@ -24,7 +24,7 @@ async def create_video_handler(video: VideoInput, session: AsyncSession = Depend
     return video.id
 
 
-@video_router.get("/{video_id}/path", status_code=200)
+@video_router.get("/{video_id}/paths", status_code=200)
 async def get_video_path_handler(video_id: uuid.UUID, session: AsyncSession = Depends(get_db)) -> Path:
     video_service = VideoService(session)
     path = await video_service.getVideoPath(video_id)

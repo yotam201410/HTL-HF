@@ -81,10 +81,36 @@ async def test_create_video(client, async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_video_paths(client):
+async def test_create_video_not_found(client):
+    video_input = {"storage_path": "test1.mp4"}
+
+    response = client.post("/videos", json=video_input)
+
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_video_invalid_format(client):
+    video_input = {"storage_path": "test1.mp5"}
+
+    response = client.post("/videos", json=video_input)
+
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_get_videos_paths(client):
     response = client.get("/videos/paths")
     assert response.status_code == 200
     assert response.json() == ["..\\resources\\fake\\path1.mp4"]
+
+
+@pytest.mark.asyncio
+async def test_get_video_path(client):
+    video_id = "00000000-0000-0000-0000-000000000001"
+    response = client.get(f"/videos/{video_id}/paths")
+    assert response.status_code == 200
+    assert response.json() == "..\\resources\\fake\\path1.mp4"
 
 
 @pytest.mark.asyncio
