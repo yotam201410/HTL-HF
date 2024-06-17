@@ -1,21 +1,21 @@
 import uuid
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.future import select
 
 from bionic_eye.backend.db import get_db
-
-# Create an in-memory SQLite database for testing
 from bionic_eye.backend.main import app
+from bionic_eye.backend.models.base import Base
+from bionic_eye.backend.models.frame import Frame
+from bionic_eye.backend.models.metadata import Metadata
+from bionic_eye.backend.models.video import Video
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+engine = create_async_engine(DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
@@ -25,8 +25,32 @@ TestingSessionLocal = async_sessionmaker(
 
 @pytest_asyncio.fixture(scope="module")
 async def async_session() -> AsyncSession:
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     async with TestingSessionLocal() as session:
+        await setup_test_data(session)
         yield session
+
+
+async def setup_test_data(session: AsyncSession):
+    metadata = Metadata(id=uuid.uuid4(), tagged=True, fov=1.0, azimuth=0.0, elevation=0.0)
+    session.add(metadata)
+    await session.commit()
+
+    video = Video(id=uuid.UUID("00000000-0000-0000-0000-000000000001"),
+                  observation_name="Test Observation",
+                  frame_count=5,
+                  storage_path="../resources/fake/path1.mp4")
+
+    frames = [
+        Frame(id=uuid.uuid4(), storage_path=f"../resources/fake/frame{i}.jpg", frame_index=i, video_id=video.id,
+              metadata_id=metadata.id)
+        for i in range(1, 6)
+    ]
+
+    session.add(video)
+    session.add_all(frames)
+    await session.commit()
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -39,93 +63,53 @@ async def client(async_session):
         yield client
 
 
-class MockVideoRepository:
-    async def createVideo(self, video):
-        video.id = uuid.uuid4()
-        return video
-
-    async def getVideosPaths(self):
-        return [Path("/resources/fake/path1.mp4"), Path("/resources/fake/path2.mp4")]
-
-    async def getVideoPath(self, video_id: uuid.UUID):
-        if video_id == uuid.UUID("00000000-0000-0000-0000-000000000001"):
-            return Path("../resources/fake/path1.mp4")
-        raise NoResultFound
-
-    async def getVideoFrames(self, video_id: uuid.UUID):
-        if video_id == uuid.UUID("00000000-0000-0000-0000-000000000001"):
-            return [Path(f"/resources/fake/frame{i}.png") for i in range(1, 6)]
-        return []
-
-    async def getVideoFrame(self, video_id: uuid.UUID, frame_index: int):
-        if video_id == uuid.UUID("00000000-0000-0000-0000-000000000001"):
-            return Path(f"/resources/fake/frame{frame_index}.png")
-        raise NoResultFound
-
-    async def getFramesPathsWithThreat(self, video_id: uuid.UUID):
-        if video_id == uuid.UUID("00000000-0000-0000-0000-000000000001"):
-            return [Path(f"../resources/fake/frame{i}.jpg") for i in range(1, 6)]
-        return []
-
-
 @pytest.mark.asyncio
-async def test_create_video(client):
+async def test_create_video(client, async_session: AsyncSession):
     video_input = {"storage_path": "test.mp4"}
 
     response = client.post("/videos", json=video_input)
 
     assert response.status_code == 201
 
+    video_to_delete = await async_session.execute(
+        select(Video).where(Video.id == uuid.UUID(response.json()))
+    )
+    video = video_to_delete.scalars().one_or_none()
+    if video:
+        await async_session.delete(video)
+        await async_session.commit()
+
 
 @pytest.mark.asyncio
-async def test_get_video_path(client):
+async def test_get_video_paths(client):
+    response = client.get("/videos/paths")
+    assert response.status_code == 200
+    assert response.json() == ["..\\resources\\fake\\path1.mp4"]
+
+
+@pytest.mark.asyncio
+async def test_get_video_frames(client):
     video_id = "00000000-0000-0000-0000-000000000001"
-
-    with patch("bionic_eye.backend.services.video_service.VideoRepository", return_value=MockVideoRepository()):
-        response = client.get(f"/videos/{video_id}/path")
+    response = client.get(f"/videos/{video_id}/frames/paths")
 
     assert response.status_code == 200
-    assert response.json() == "..\\resources\\fake\\path1.mp4"
+    assert response.json() == [f"..\\resources\\fake\\frame{i}.jpg" for i in range(1, 6)]
 
 
 @pytest.mark.asyncio
-async def test_get_videos_paths(client):
-    with patch("bionic_eye.backend.services.video_service.VideoRepository", return_value=MockVideoRepository()):
-        response = client.get("/videos/paths")
-
-    assert response.status_code == 200
-    assert response.json() == ["\\resources\\fake\\path1.mp4", "\\resources\\fake\\path2.mp4"]
-
-
-@pytest.mark.asyncio
-async def test_get_video_frames_paths(client):
+async def test_get_video_frame(client):
     video_id = "00000000-0000-0000-0000-000000000001"
-
-    with patch("bionic_eye.backend.services.video_service.VideoRepository", return_value=MockVideoRepository()):
-        response = client.get(f"videos/{video_id}/frames/paths")
-
-    assert response.status_code == 200
-    assert response.json() == [f"\\resources\\fake\\frame{i}.png" for i in range(1, 6)]
-
-
-@pytest.mark.asyncio
-async def test_get_video_frame_path(client):
-    video_id = "00000000-0000-0000-0000-000000000001"
-    frame_index = 2
-
-    with patch("bionic_eye.backend.services.video_service.VideoRepository", return_value=MockVideoRepository()):
-        response = client.get(f"/videos/{video_id}/frames/{frame_index}/paths")
+    frame_index = 1
+    response = client.get(f"/videos/{video_id}/frames/{frame_index}/paths")
 
     assert response.status_code == 200
-    assert response.json() == "\\resources\\fake\\frame2.png"
+    assert response.json() == f"..\\resources\\fake\\frame{frame_index}.jpg"
 
 
 @pytest.mark.asyncio
 async def test_download_video(client):
     video_id = "00000000-0000-0000-0000-000000000001"
-
-    with patch("bionic_eye.backend.services.video_service.VideoRepository", return_value=MockVideoRepository()):
-        response = client.get(f"/videos/{video_id}")
+    response = client.get(f"/videos/{video_id}")
 
     assert response.status_code == 200
     assert response.headers["content-disposition"] == 'attachment; filename="path1.mp4"'
@@ -134,9 +118,7 @@ async def test_download_video(client):
 @pytest.mark.asyncio
 async def test_download_tagged_frames(client):
     video_id = "00000000-0000-0000-0000-000000000001"
-
-    with patch("bionic_eye.backend.services.video_service.VideoRepository", return_value=MockVideoRepository()):
-        response = client.get(f"/videos/{video_id}/frames/tagged")
+    response = client.get(f"/videos/{video_id}/frames/tagged")
 
     assert response.status_code == 200
     assert response.headers["content-disposition"] == "attachment; filename=files.zip"
