@@ -6,7 +6,7 @@ from starlette.responses import PlainTextResponse
 from bionic_eye.backend.controllers.video_controller import video_router
 from bionic_eye.backend.logger import logger
 from bionic_eye.backend.middlewares.log_middleware import log_middleware
-from bionic_eye.backend.profiler.profile_middleware import profile_middleware
+from bionic_eye.backend.middlewares.profile_middleware import profile_middleware
 
 app = FastAPI(
     title="Bionic Eye API", docs_url="/docs")

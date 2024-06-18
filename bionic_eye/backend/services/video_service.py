@@ -1,5 +1,6 @@
 import io
 import os
+import time
 import uuid
 import zipfile
 from pathlib import Path
@@ -108,7 +109,7 @@ class VideoService:
 
         filename = os.path.basename(path)
         observation_name = filename[:filename.find('_')]
-        dir_name = observation_name + str(random.randint(1, 5000))
+        dir_name = observation_name + str(time.time_ns())
         os.mkdir(BASE_PATH / dir_name)
         frames = saveFramesAndTag(path, str((BASE_PATH / dir_name)))
         video = Video(frames=frames, observation_name=observation_name, storage_path=path, frame_count=len(frames))
