@@ -112,7 +112,7 @@ class VideoService:
         observation_name = filename[:filename.find('_')]
         dir_name = observation_name + str(time.time_ns())
 
-        if os.path.isdir(BASE_PATH):
+        if not os.path.isdir(BASE_PATH):
             os.mkdir(BASE_PATH)
 
         os.mkdir(BASE_PATH / dir_name)
