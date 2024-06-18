@@ -58,7 +58,7 @@ async def setup_test_data(session: AsyncSession):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def client(async_session):
+async def client(async_session: AsyncSession):
     def _get_test_db():
         yield async_session
 
@@ -68,7 +68,7 @@ async def client(async_session):
 
 
 @pytest.mark.asyncio
-async def test_create_video(client, async_session: AsyncSession):
+async def test_create_video(client: TestClient, async_session: AsyncSession):
     video_input = {"storage_path": "test.mp4"}
 
     response = client.post("/videos", json=video_input)
@@ -85,7 +85,7 @@ async def test_create_video(client, async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_create_video_not_found(client):
+async def test_create_video_not_found(client: TestClient):
     video_input = {"storage_path": "test1.mp4"}
 
     response = client.post("/videos", json=video_input)
@@ -94,7 +94,7 @@ async def test_create_video_not_found(client):
 
 
 @pytest.mark.asyncio
-async def test_create_video_invalid_format(client):
+async def test_create_video_invalid_format(client: TestClient):
     video_input = {"storage_path": "test1.mp5"}
 
     response = client.post("/videos", json=video_input)
@@ -103,21 +103,21 @@ async def test_create_video_invalid_format(client):
 
 
 @pytest.mark.asyncio
-async def test_get_videos_paths(client):
+async def test_get_videos_paths(client: TestClient):
     response = client.get("/videos/paths")
     assert response.status_code == 200
     assert response.json() == [TEST_VIDEO_PATH]
 
 
 @pytest.mark.asyncio
-async def test_get_video_path(client):
+async def test_get_video_path(client: TestClient):
     response = client.get(f"/videos/{VIDEO_ID}/paths")
     assert response.status_code == 200
     assert response.json() == TEST_VIDEO_PATH
 
 
 @pytest.mark.asyncio
-async def test_get_video_frames(client):
+async def test_get_video_frames(client: TestClient):
     response = client.get(f"/videos/{VIDEO_ID}/frames/paths")
 
     assert response.status_code == 200
@@ -125,7 +125,7 @@ async def test_get_video_frames(client):
 
 
 @pytest.mark.asyncio
-async def test_get_video_frame(client):
+async def test_get_video_frame(client: TestClient):
     frame_index = 1
     response = client.get(f"/videos/{VIDEO_ID}/frames/{frame_index}/paths")
 
@@ -134,7 +134,7 @@ async def test_get_video_frame(client):
 
 
 @pytest.mark.asyncio
-async def test_download_video(client):
+async def test_download_video(client: TestClient):
     response = client.get(f"/videos/{VIDEO_ID}")
 
     assert response.status_code == 200
@@ -142,7 +142,7 @@ async def test_download_video(client):
 
 
 @pytest.mark.asyncio
-async def test_download_tagged_frames(client):
+async def test_download_tagged_frames(client: TestClient):
     response = client.get(f"/videos/{VIDEO_ID}/frames/tagged")
 
     assert response.status_code == 200
