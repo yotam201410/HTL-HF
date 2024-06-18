@@ -102,7 +102,7 @@ class VideoService:
     def __init__(self, session: AsyncSession):
         self.repository = VideoRepository(session)
 
-    async def addVideo(self, path: str):
+    async def add_video(self, path: str):
         if not path.endswith(".mp4"):
             raise HTTPException(status_code=400, detail=f"{path} is not mp4")
         elif not os.path.exists(path):
@@ -123,7 +123,7 @@ class VideoService:
 
         return video
 
-    async def getVideosPath(self):
+    async def get_videos_path(self):
         paths = await self.repository.get_videos_paths()
 
         logger.debug(f"fetched {len(paths)} video paths")
@@ -139,7 +139,7 @@ class VideoService:
         except NoResultFound:
             raise HTTPException(status_code=404, detail=f"video with id: {video_id} not found")
 
-    async def getVideoFramesPaths(self, video_id: uuid.UUID):
+    async def get_video_frames_path(self, video_id: uuid.UUID):
         frames = await self.repository.get_video_frames(video_id)
         logger.debug(f"fetched {len(frames)} of video: {video_id}")
 
@@ -149,7 +149,7 @@ class VideoService:
 
         return frames
 
-    async def getVideoFramePath(self, video_id: uuid.UUID, frame_index: int):
+    async def get_video_frame_path(self, video_id: uuid.UUID, frame_index: int):
         try:
             frame = await self.repository.get_video_frame(video_id, frame_index)
             logger.info(f"fetched frame number: {frame_index} of video: {video_id}")
@@ -160,7 +160,7 @@ class VideoService:
                                 detail=f"video with id: {video_id} not found or frame with index: {frame_index} not "
                                        f"found")
 
-    async def getTaggedFramesFiles(self, video_id: uuid.UUID):
+    async def get_tagged_frames_zip(self, video_id: uuid.UUID):
         paths = await self.repository.get_frames_paths_with_threat(video_id)
         logger.debug(f"fetched {len(paths)} frames with target of video: {video_id}")
         zip_buffer = io.BytesIO()
