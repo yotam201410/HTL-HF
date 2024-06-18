@@ -130,7 +130,7 @@ class VideoService:
 
         return paths
 
-    async def getVideoPath(self, video_id: uuid.UUID):
+    async def get_video_path(self, video_id: uuid.UUID):
         try:
             path = await self.repository.get_video_path(video_id)
             logger.debug(f"fetched video: {video_id} path {path}")

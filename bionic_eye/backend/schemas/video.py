@@ -18,5 +18,5 @@ class Video(BaseModel):
 
 class VideoInput(BaseModel):
     storage_path: str = Field(examples=["resources\\fake\\path1.mp4"])
-    
+
     model_config = ConfigDict(from_attributes=True)
