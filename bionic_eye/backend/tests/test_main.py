@@ -27,15 +27,6 @@ TestingSessionLocal = async_sessionmaker(
 )
 
 
-@pytest_asyncio.fixture(scope="module")
-async def async_session() -> AsyncSession:
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    async with TestingSessionLocal() as session:
-        await setup_test_data(session)
-        yield session
-
-
 async def setup_test_data(session: AsyncSession):
     metadata = Metadata(id=uuid.uuid4(), tagged=True, fov=1.0, azimuth=0.0, elevation=0.0)
     session.add(metadata)
@@ -55,6 +46,15 @@ async def setup_test_data(session: AsyncSession):
     session.add(video)
     session.add_all(frames)
     await session.commit()
+
+
+@pytest_asyncio.fixture(scope="module")
+async def async_session() -> AsyncSession:
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    async with TestingSessionLocal() as session:
+        await setup_test_data(session)
+        yield session
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -105,6 +105,7 @@ async def test_create_video_invalid_format(client: TestClient):
 @pytest.mark.asyncio
 async def test_get_videos_paths(client: TestClient):
     response = client.get("/videos/paths")
+
     assert response.status_code == 200
     assert response.json() == [TEST_VIDEO_PATH]
 
@@ -112,6 +113,7 @@ async def test_get_videos_paths(client: TestClient):
 @pytest.mark.asyncio
 async def test_get_video_path(client: TestClient):
     response = client.get(f"/videos/{VIDEO_ID}/paths")
+
     assert response.status_code == 200
     assert response.json() == TEST_VIDEO_PATH
 
