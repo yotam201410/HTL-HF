@@ -119,12 +119,12 @@ class VideoService:
         frames = saveFramesAndTag(path, str((BASE_PATH / dir_name)))
         video = Video(frames=frames, observation_name=observation_name, storage_path=path, frame_count=len(frames))
 
-        await self.repository.createVideo(video)
+        await self.repository.create_video(video)
 
         return video
 
     async def getVideosPath(self):
-        paths = await self.repository.getVideosPaths()
+        paths = await self.repository.get_videos_paths()
 
         logger.debug(f"fetched {len(paths)} video paths")
 
@@ -132,7 +132,7 @@ class VideoService:
 
     async def getVideoPath(self, video_id: uuid.UUID):
         try:
-            path = await self.repository.getVideoPath(video_id)
+            path = await self.repository.get_video_path(video_id)
             logger.debug(f"fetched video: {video_id} path {path}")
 
             return path
@@ -140,7 +140,7 @@ class VideoService:
             raise HTTPException(status_code=404, detail=f"video with id: {video_id} not found")
 
     async def getVideoFramesPaths(self, video_id: uuid.UUID):
-        frames = await self.repository.getVideoFrames(video_id)
+        frames = await self.repository.get_video_frames(video_id)
         logger.debug(f"fetched {len(frames)} of video: {video_id}")
 
         if len(frames) == 0:
@@ -151,7 +151,7 @@ class VideoService:
 
     async def getVideoFramePath(self, video_id: uuid.UUID, frame_index: int):
         try:
-            frame = await self.repository.getVideoFrame(video_id, frame_index)
+            frame = await self.repository.get_video_frame(video_id, frame_index)
             logger.info(f"fetched frame number: {frame_index} of video: {video_id}")
 
             return frame
@@ -161,7 +161,7 @@ class VideoService:
                                        f"found")
 
     async def getTaggedFramesFiles(self, video_id: uuid.UUID):
-        paths = await self.repository.getFramesPathsWithThreat(video_id)
+        paths = await self.repository.get_frames_paths_with_threat(video_id)
         logger.debug(f"fetched {len(paths)} frames with target of video: {video_id}")
         zip_buffer = io.BytesIO()
 

@@ -13,28 +13,49 @@ class VideoRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def createVideo(self, video: Video):
+    async def create_video(self, video: Video):
         self.session.add(video)
         await self.session.commit()
 
-    async def getVideosPaths(self):
-        return (await self.session.execute(select(Video.storage_path))).scalars().all()
+    async def get_videos_paths(self) -> List[str]:
+        query = select(Video.storage_path)
+        result = await self.session.execute(query)
 
-    async def getVideoPath(self, video_id: uuid.UUID):
-        return (await self.session.execute(select(Video.storage_path).where(Video.id == video_id))).scalars().one()
+        return result.scalars().all()
 
-    async def getVideoFrames(self, video_id: uuid.UUID):
-        return (await self.session.execute(
-            select(Frame.storage_path).where(Video.id == video_id).join(Video,
-                                                                        Video.id == Frame.video_id))).scalars().all()
+    async def get_video_path(self, video_id: uuid.UUID) -> str:
+        query = select(Video.storage_path).where(Video.id == video_id)
+        result = await self.session.execute(query)
 
-    async def getFramesPathsWithThreat(self, video_id: uuid.UUID):
-        return (await self.session.execute(
-            select(Frame.storage_path).where(Video.id == video_id, Metadata.tagged).join(Video,
-                                                                                         Video.id == Frame.video_id).join(
-                Metadata, Metadata.id == Frame.metadata_id))).scalars().all()
+        return result.scalars().one()
 
-    async def getVideoFrame(self, video_id: uuid.UUID, frame_index: int):
-        return (await self.session.execute(
-            select(Frame.storage_path).where(Video.id == video_id, Frame.frame_index == frame_index).join(Video,
-                                                                                                          Video.id == Frame.video_id))).scalars().one()
+    async def get_video_frames(self, video_id: uuid.UUID) -> List[str]:
+        query = (
+            select(Frame.storage_path)
+                .join(Video, Video.id == Frame.video_id)
+                .where(Video.id == video_id)
+        )
+        result = await self.session.execute(query)
+
+        return result.scalars().all()
+
+    async def get_frames_paths_with_threat(self, video_id: uuid.UUID) -> List[str]:
+        query = (
+            select(Frame.storage_path)
+                .join(Video, Video.id == Frame.video_id)
+                .join(Metadata, Metadata.id == Frame.metadata_id)
+                .where(Video.id == video_id, Metadata.tagged == True)
+        )
+        result = await self.session.execute(query)
+
+        return result.scalars().all()
+
+    async def get_video_frame(self, video_id: uuid.UUID, frame_index: int) -> str:
+        query = (
+            select(Frame.storage_path)
+                .join(Video, Video.id == Frame.video_id)
+                .where(Video.id == video_id, Frame.frame_index == frame_index)
+        )
+        result = await self.session.execute(query)
+
+        return result.scalars().one()
