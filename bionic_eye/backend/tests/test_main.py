@@ -14,6 +14,7 @@ from bionic_eye.backend.models.metadata import Metadata
 from bionic_eye.backend.models.video import Video
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+VIDEO_ID = "00000000-0000-0000-0000-000000000001"
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(
@@ -37,7 +38,7 @@ async def setup_test_data(session: AsyncSession):
     session.add(metadata)
     await session.commit()
 
-    video = Video(id=uuid.UUID("00000000-0000-0000-0000-000000000001"),
+    video = Video(id=uuid.UUID(VIDEO_ID),
                   observation_name="Test Observation",
                   frame_count=5,
                   storage_path="../resources/fake/path1.mp4")
@@ -107,16 +108,14 @@ async def test_get_videos_paths(client):
 
 @pytest.mark.asyncio
 async def test_get_video_path(client):
-    video_id = "00000000-0000-0000-0000-000000000001"
-    response = client.get(f"/videos/{video_id}/paths")
+    response = client.get(f"/videos/{VIDEO_ID}/paths")
     assert response.status_code == 200
     assert response.json() == "..\\resources\\fake\\path1.mp4"
 
 
 @pytest.mark.asyncio
 async def test_get_video_frames(client):
-    video_id = "00000000-0000-0000-0000-000000000001"
-    response = client.get(f"/videos/{video_id}/frames/paths")
+    response = client.get(f"/videos/{VIDEO_ID}/frames/paths")
 
     assert response.status_code == 200
     assert response.json() == [f"..\\resources\\fake\\frame{i}.jpg" for i in range(1, 6)]
@@ -124,9 +123,8 @@ async def test_get_video_frames(client):
 
 @pytest.mark.asyncio
 async def test_get_video_frame(client):
-    video_id = "00000000-0000-0000-0000-000000000001"
     frame_index = 1
-    response = client.get(f"/videos/{video_id}/frames/{frame_index}/paths")
+    response = client.get(f"/videos/{VIDEO_ID}/frames/{frame_index}/paths")
 
     assert response.status_code == 200
     assert response.json() == f"..\\resources\\fake\\frame{frame_index}.jpg"
@@ -134,8 +132,7 @@ async def test_get_video_frame(client):
 
 @pytest.mark.asyncio
 async def test_download_video(client):
-    video_id = "00000000-0000-0000-0000-000000000001"
-    response = client.get(f"/videos/{video_id}")
+    response = client.get(f"/videos/{VIDEO_ID}")
 
     assert response.status_code == 200
     assert response.headers["content-disposition"] == 'attachment; filename="path1.mp4"'
@@ -143,8 +140,7 @@ async def test_download_video(client):
 
 @pytest.mark.asyncio
 async def test_download_tagged_frames(client):
-    video_id = "00000000-0000-0000-0000-000000000001"
-    response = client.get(f"/videos/{video_id}/frames/tagged")
+    response = client.get(f"/videos/{VIDEO_ID}/frames/tagged")
 
     assert response.status_code == 200
     assert response.headers["content-disposition"] == "attachment; filename=files.zip"
