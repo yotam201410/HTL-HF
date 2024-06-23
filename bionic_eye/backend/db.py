@@ -6,7 +6,6 @@ import os
 
 load_dotenv()
 
-# engine object to connect to db
 url = URL.create(drivername=os.environ.get("DB_TYPE"), username=os.environ.get("DB_USERNAME"),
                  password=os.environ.get("DB_PASSWORD"), host=os.environ.get("DB_IP"),
                  database=os.environ.get("DB_NAME"),
