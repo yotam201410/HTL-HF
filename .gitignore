@@ -8,3 +8,4 @@
 *.log
 /bionic_eye/backend/profiles/*.html
 /bionic_eye/backend/tests/profiles/*.html
+/node practice/node_modules
