@@ -37,6 +37,7 @@
             <% } else { %>
                 <li class="main-header__item">
                     <form action="/logout" method="post">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit">Logout</button>
                     </form>
                 </li>
@@ -67,7 +68,7 @@
             <li class="mobile-nav__item">
                 <a class="<%= path === '/admin/products' ? 'active' : '' %>" href="/admin/products">Admin Products
                 </a>
-            </li> 
+            </li>
         <% } %>
         <% if (!isAuthenticated) { %>
             <li class="mobile-nav__item">
