@@ -1,0 +1,19 @@
+FROM node:20.13.1-bullseye
+
+ARG DB_IP_ARG
+ARG DB_NAME_ARG
+ARG DB_PORT_ARG
+ARG BACK_PORT_ARG
+
+WORKDIR .
+
+ENV DB_IP=${DB_IP_ARG}
+ENV DB_NAME=${DB_NAME_ARG}
+ENV DB_PORT=${DB_PORT_ARG}
+ENV BACK_PORT = ${BACK_PORT_ARG}
+
+COPY . .
+
+RUN [ "npm","i" ] 
+
+ENTRYPOINT [ "npm","run","start" ]

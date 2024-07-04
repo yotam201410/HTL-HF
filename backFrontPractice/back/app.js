@@ -7,6 +7,7 @@ const multer = require('multer');
 
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
+const cors = require("cors");
 
 const app = express();
 
@@ -33,20 +34,13 @@ const fileFilter = (req, file, cb) => {
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
+app.use(cors());
 app.use(
   multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
 );
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'OPTIONS, GET, POST, PUT, PATCH, DELETE'
-  );
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
+
 
 app.use('/feed', feedRoutes);
 app.use('/auth', authRoutes);
@@ -61,10 +55,10 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(
-    'mongodb+srv://maximilian:9u4biljMQc4jjqbe@cluster0-ntrwp.mongodb.net/messages?retryWrites=true'
+    `mongodb://${process.env.DB_IP ?? "localhost"}:${process.env.DB_PORT ?? 27017}/${process.env.DB_NAME ?? "shop"}`
   )
   .then(result => {
-    const server = app.listen(8080);
+    const server = app.listen(process.env.BACK_PORT ?? 8080);
     const io = require('./socket').init(server);
     io.on('connection', socket => {
       console.log('Client connected');
