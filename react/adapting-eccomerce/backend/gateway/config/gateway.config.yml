@@ -1,0 +1,493 @@
+http:
+  port: 8080 # Port on which the gateway will listen
+
+apiEndpoints:
+  # User-related endpoints
+  login:
+    host: "*"
+    paths:
+      - "/users/login"
+  register:
+    host: "*"
+    paths:
+      - "/users/register"
+  getAddresses:
+    host: "*"
+    paths:
+      - "/users/:username/addresses"
+  removeUser:
+    host: "*"
+    paths:
+      - "/users/:user_id"
+  updateDefaultAddress:
+    host: "*"
+    paths:
+      - "/users/address"
+  updateUser:
+    host: "*"
+    paths:
+      - "/users"
+  getUserByID:
+    host: "*"
+    paths:
+      - "/users/:user_id"
+  # Address-related endpoints
+  createAddress:
+    host: "*"
+    paths:
+      - "/addresses"
+  removeAddress:
+    host: "*"
+    paths:
+      - "/addresses/:address_id"
+  getAddressByID:
+    host: "*"
+    paths:
+      - "/addresses/:address_id"
+  changeAddress: # New endpoint for changing an address
+    host: "*"
+    paths:
+      - "/addresses"
+
+  # Product-related endpoints
+  createProduct:
+    host: "*"
+    paths:
+      - "/products"
+  removeProduct:
+    host: "*"
+    paths:
+      - "/products"
+  updateProductPrice:
+    host: "*"
+    paths:
+      - "/products/price"
+  findProductById:
+    host: "*"
+    paths:
+      - "/products/:id"
+  findProductsByQuery:
+    host: "*"
+    paths:
+      - "/products"
+
+  # Order-related endpoints
+  createOrder:
+    host: "*"
+    paths:
+      - "/orders"
+  insertProductToOrder:
+    host: "*"
+    paths:
+      - "/orders/products"
+  getProductInOrder:
+    host: "*"
+    paths:
+      - "/orders/:order_id/products/:product_id"
+  deleteProductFromOrder:
+    host: "*"
+    paths:
+      - "/orders/products"
+  getOrderByID:
+    host: "*"
+    paths:
+      - "/orders/:order_id"
+  changeOrderStatus:
+    host: "*"
+    paths:
+      - "/orders/status"
+  updateProductAmount:
+    host: "*"
+    paths:
+      - "/orders/products"
+  getUserOrders:
+    host: "*"
+    paths:
+      - "/orders/users/:user_id"
+
+serviceEndpoints:
+  usersService:
+    url: "http://localhost:3001/" # URL of your users microservice
+  addressesService:
+    url: "http://localhost:3001/" # URL of your addresses microservice
+  productsService:
+    url: "http://localhost:3002/" # URL of your products microservice
+  ordersService:
+    url: "http://localhost:3003/" # URL of your orders microservice
+
+policies:
+  - cors
+  - proxy
+  - log
+  - rate-limit
+  - jwt
+  - key-auth
+
+pipelines:
+  # Pipeline for user login
+  loginPipeline:
+    apiEndpoints:
+      - login
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["POST"]
+      - log:
+          action:
+            message: "Login request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService
+
+  # Pipeline for user registration
+  registerPipeline:
+    apiEndpoints:
+      - register
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["POST"]
+      - log:
+          action:
+            message: "Register request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService
+
+  # Pipeline for getting addresses
+  getAddressesPipeline:
+    apiEndpoints:
+      - getAddresses
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["GET"]
+      - log:
+          action:
+            message: "Get Addresses request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService
+
+  # Pipeline for removing a user
+  removeUserPipeline:
+    apiEndpoints:
+      - removeUser
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["DELETE"]
+      - log:
+          action:
+            message: "Remove User request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService
+
+  # Pipeline for updating default address
+  updateDefaultAddressPipeline:
+    apiEndpoints:
+      - updateDefaultAddress
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["PATCH"]
+      - log:
+          action:
+            message: "Update Default Address request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService
+
+  # Pipeline for updating a user
+  updateUserPipeline:
+    apiEndpoints:
+      - updateUser
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["PATCH"]
+      - log:
+          action:
+            message: "Update User request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService
+
+  # Pipeline for getting user by ID
+  getUserByIDPipeline:
+    apiEndpoints:
+      - getUserByID
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["GET"]
+      - log:
+          action:
+            message: "Get User By ID request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService
+
+  # Pipeline for creating an address
+  createAddressPipeline:
+    apiEndpoints:
+      - createAddress
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["POST"]
+      - log:
+          action:
+            message: "Create Address request received"
+      - proxy:
+          action:
+            serviceEndpoint: addressesService
+
+  # Pipeline for removing an address
+  removeAddressPipeline:
+    apiEndpoints:
+      - removeAddress
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["DELETE"]
+      - log:
+          action:
+            message: "Remove Address request received"
+      - proxy:
+          action:
+            serviceEndpoint: addressesService
+
+  # Pipeline for changing an address
+  changeAddressPipeline: # New pipeline for changing an address
+    apiEndpoints:
+      - changeAddress
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["PATCH"]
+      - log:
+          action:
+            message: "Change Address request received"
+      - proxy:
+          action:
+            serviceEndpoint: addressesService
+
+  # Pipeline for creating a product
+  createProductPipeline:
+    apiEndpoints:
+      - createProduct
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["POST"]
+      - log:
+          action:
+            message: "Create Product request received"
+      - proxy:
+          action:
+            serviceEndpoint: productsService
+
+  # Pipeline for removing a product
+  removeProductPipeline:
+    apiEndpoints:
+      - removeProduct
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["DELETE"]
+      - log:
+          action:
+            message: "Remove Product request received"
+      - proxy:
+          action:
+            serviceEndpoint: productsService
+
+  # Pipeline for updating a product's price
+  updateProductPricePipeline:
+    apiEndpoints:
+      - updateProductPrice
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["PATCH"]
+      - log:
+          action:
+            message: "Update Product Price request received"
+      - proxy:
+          action:
+            serviceEndpoint: productsService
+
+  # Pipeline for finding a product by ID
+  findProductByIdPipeline:
+    apiEndpoints:
+      - findProductById
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["GET"]
+      - log:
+          action:
+            message: "Find Product By ID request received"
+      - proxy:
+          action:
+            serviceEndpoint: productsService
+
+  # Pipeline for finding products by query
+  findProductsByQueryPipeline:
+    apiEndpoints:
+      - findProductsByQuery
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["GET"]
+      - log:
+          action:
+            message: "Find Products By Query request received"
+      - proxy:
+          action:
+            serviceEndpoint: productsService
+
+  # Pipeline for creating an order
+  createOrderPipeline:
+    apiEndpoints:
+      - createOrder
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["POST"]
+      - log:
+          action:
+            message: "Create Order request received"
+      - proxy:
+          action:
+            serviceEndpoint: ordersService
+
+  # Pipeline for inserting a product to an order
+  insertProductToOrderPipeline:
+    apiEndpoints:
+      - insertProductToOrder
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["POST"]
+      - log:
+          action:
+            message: "Insert Product To Order request received"
+      - proxy:
+          action:
+            serviceEndpoint: ordersService
+
+  # Pipeline for getting a product in an order
+  getProductInOrderPipeline:
+    apiEndpoints:
+      - getProductInOrder
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["GET"]
+      - log:
+          action:
+            message: "Get Product In Order request received"
+      - proxy:
+          action:
+            serviceEndpoint: ordersService
+
+  # Pipeline for deleting a product from an order
+  deleteProductFromOrderPipeline:
+    apiEndpoints:
+      - deleteProductFromOrder
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["DELETE"]
+      - log:
+          action:
+            message: "Delete Product From Order request received"
+      - proxy:
+          action:
+            serviceEndpoint: ordersService
+
+  # Pipeline for getting an order by ID
+  getOrderByIDPipeline:
+    apiEndpoints:
+      - getOrderByID
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["GET"]
+      - log:
+          action:
+            message: "Get Order By ID request received"
+      - proxy:
+          action:
+            serviceEndpoint: ordersService
+
+  # Pipeline for changing order status
+  changeOrderStatusPipeline:
+    apiEndpoints:
+      - changeOrderStatus
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["PATCH"]
+      - log:
+          action:
+            message: "Change Order Status request received"
+      - proxy:
+          action:
+            serviceEndpoint: ordersService
+
+  # Pipeline for updating product amount in an order
+  updateProductAmountPipeline:
+    apiEndpoints:
+      - updateProductAmount
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["PATCH"]
+      - log:
+          action:
+            message: "Update Product Amount request received"
+      - proxy:
+          action:
+            serviceEndpoint: ordersService
+
+  # Pipeline for getting user orders
+  getUserOrdersPipeline:
+    apiEndpoints:
+      - getUserOrders
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["GET"]
+      - log:
+          action:
+            message: "Get User Orders request received"
+      - proxy:
+          action:
+            serviceEndpoint: ordersService
