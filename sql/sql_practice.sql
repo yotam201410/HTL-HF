@@ -739,7 +739,7 @@ SELECT
         WHERE
             EMP3.PAY_MONTH <= EMP1.PAY_MONTH
             AND EMP1.ID = EMP3.ID
-    ) AS ACCUMATIVE_SUM
+    ) AS ACCUMULATIVE_SUM
 FROM
     EMPLOYEE EMP1
 WHERE
@@ -937,3 +937,76 @@ ORDER BY
     ID;
 
 ------------------------------17------------------------------
+----------------------------18----------------------------
+-----------------------------19---------------------------------
+DROP TABLE IF EXISTS USERS;
+
+CREATE TABLE USERS(
+    USER_ID INTEGER,
+    JOIN_DATE DATE,
+    INVITED_BY INTEGER
+);
+
+SET
+    datestyle to SQL,
+    MDY;
+
+INSERT INTO
+    users (user_id, join_date, invited_by)
+VALUES
+    (1, CAST('01-01-20' AS date), 0),
+    (2, CAST('01-10-20' AS date), 1),
+    (3, CAST('02-05-20' AS date), 2),
+    (4, CAST('02-12-20' AS date), 3),
+    (5, CAST('02-25-20' AS date), 2),
+    (6, CAST('03-01-20' AS date), 0),
+    (7, CAST('03-01-20' AS date), 4),
+    (8, CAST('03-04-20' AS date), 7);
+
+SET
+    datestyle to SQL,
+    DMY;
+
+SELECT
+    user_id,
+    (
+        SELECT
+            AVG(u2.join_date - u1.join_date)
+        FROM
+            USERS U2
+        WHERE
+            U2.INVITED_BY = U1.USER_ID
+    )
+FROM
+    USERS u1;
+    --------------------------------20-----------------------
+    DROP TABLE IF EXISTS ATTENDANCE;
+CREATE TABLE ATTENDANCE(
+	EVENT_DATE DATE,
+	VISITORS INTEGER
+);
+INSERT INTO attendance (event_date, visitors)
+VALUES
+(CAST('01-01-20' AS date), 10),
+(CAST('01-04-20' AS date), 109),
+(CAST('01-05-20' AS date), 150),
+(CAST('01-06-20' AS date), 99),
+(CAST('01-07-20' AS date), 145),
+(CAST('01-08-20' AS date), 1455),
+(CAST('01-11-20' AS date), 199),
+(CAST('01-12-20' AS date), 188);
+WITH CalculatedAttendance AS (
+    SELECT EVENT_DATE, 
+           (VISITORS + (SELECT VISITORS + (SELECT VISITORS FROM ATTENDANCE E3
+                        WHERE E3.EVENT_DATE > E2.EVENT_DATE
+                        ORDER BY E3.EVENT_DATE
+                        LIMIT 1
+                        ) FROM ATTENDANCE E2
+                        WHERE E2.EVENT_DATE > E1.EVENT_DATE
+                        ORDER BY E2.EVENT_DATE
+                        LIMIT 1
+                        )) AS VISITORS_SUM 
+    FROM ATTENDANCE E1
+)
+SELECT E1.EVENT_DATE, E1.VISIOTRS_SUM FROM ATTENDANCE E1
+WHERE VISITORS_SUM > 100 AND ();
