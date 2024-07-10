@@ -979,34 +979,75 @@ SELECT
     )
 FROM
     USERS u1;
-    --------------------------------20-----------------------
-    DROP TABLE IF EXISTS ATTENDANCE;
-CREATE TABLE ATTENDANCE(
-	EVENT_DATE DATE,
-	VISITORS INTEGER
-);
-INSERT INTO attendance (event_date, visitors)
+
+--------------------------------20-----------------------
+DROP TABLE IF EXISTS ATTENDANCE;
+
+CREATE TABLE ATTENDANCE(EVENT_DATE DATE, VISITORS INTEGER);
+
+INSERT INTO
+    attendance (event_date, visitors)
 VALUES
-(CAST('01-01-20' AS date), 10),
-(CAST('01-04-20' AS date), 109),
-(CAST('01-05-20' AS date), 150),
-(CAST('01-06-20' AS date), 99),
-(CAST('01-07-20' AS date), 145),
-(CAST('01-08-20' AS date), 1455),
-(CAST('01-11-20' AS date), 199),
-(CAST('01-12-20' AS date), 188);
-WITH CalculatedAttendance AS (
-    SELECT EVENT_DATE, 
-           (VISITORS + (SELECT VISITORS + (SELECT VISITORS FROM ATTENDANCE E3
-                        WHERE E3.EVENT_DATE > E2.EVENT_DATE
-                        ORDER BY E3.EVENT_DATE
-                        LIMIT 1
-                        ) FROM ATTENDANCE E2
-                        WHERE E2.EVENT_DATE > E1.EVENT_DATE
-                        ORDER BY E2.EVENT_DATE
-                        LIMIT 1
-                        )) AS VISITORS_SUM 
-    FROM ATTENDANCE E1
+    (CAST('01-01-20' AS date), 10),
+    (CAST('01-04-20' AS date), 109),
+    (CAST('01-05-20' AS date), 150),
+    (CAST('01-06-20' AS date), 99),
+    (CAST('01-07-20' AS date), 145),
+    (CAST('01-08-20' AS date), 1455),
+    (CAST('01-11-20' AS date), 199),
+    (CAST('01-12-20' AS date), 188);
+
+WITH NEXT_DAY_ATTENDANCE AS (
+    SELECT
+        E1.EVENT_DATE,
+        (
+            SELECT
+                E2.visitors
+            FROM
+                ATTENDANCE E2
+            WHERE
+                E2.EVENT_DATE > E1.EVENT_DATE
+            ORDER BY
+                E2.EVENT_DATE ASC
+            LIMIT
+                1
+        )
+    FROM
+        ATTENDANCE E1
+),
+NEXT_NEXT_DAY_ATTENDANCE AS (
+    SELECT
+        E1.EVENT_DATE,
+        (
+            SELECT
+                E2.visitors
+            FROM
+                ATTENDANCE E2
+            WHERE
+                E2.EVENT_DATE > E1.EVENT_DATE
+            ORDER BY
+                E2.EVENT_DATE ASC OFFSET 1
+            LIMIT
+                1
+        )
+    FROM
+        ATTENDANCE E1
 )
-SELECT E1.EVENT_DATE, E1.VISIOTRS_SUM FROM ATTENDANCE E1
-WHERE VISITORS_SUM > 100 AND ();
+SELECT
+    E1.EVENT_DATE,
+    E1.VISITORS
+FROM
+    ATTENDANCE E1
+    INNER JOIN NEXT_DAY_ATTENDANCE E2 ON E2.EVENT_DATE = E1.EVENT_DATE
+    INNER JOIN NEXT_NEXT_DAY_ATTENDANCE E3 ON E1.EVENT_DATE = E3.EVENT_DATE
+WHERE
+    E1.VISITORS > 100
+    AND (
+        E2.VISITORS > 100
+        OR E2.VISITORS IS NULL
+    )
+    AND (
+        E3.VISITORS > 100
+        OR E3.VISITORS IS NULL
+    );
+---------------------------------------21---------------------------------
