@@ -1050,4 +1050,211 @@ WHERE
         E3.VISITORS > 100
         OR E3.VISITORS IS NULL
     );
+
 ---------------------------------------21---------------------------------
+-- Create and populate tables
+DROP TABLE IF EXISTS ORDERS;
+
+DROP TABLE IF EXISTS PRODUCTS;
+
+CREATE TABLE ORDERS(
+    ORDER_ID INTEGER,
+    CUSTOMER_ID INTEGER,
+    PRODUCT_ID INTEGER
+);
+
+CREATE TABLE PRODUCTS(ID INTEGER, NAME TEXT);
+
+INSERT INTO
+    orders (order_id, customer_id, product_id)
+VALUES
+    (1, 1, 1),
+    (1, 1, 2),
+    (1, 1, 3),
+    (2, 2, 1),
+    (2, 2, 2),
+    (2, 2, 4),
+    (3, 1, 5);
+
+INSERT INTO
+    products (id, name)
+VALUES
+    (1, 'A'),
+    (2, 'B'),
+    (3, 'C'),
+    (4, 'D'),
+    (5, 'E');
+
+-- Query to find the top 3 pairs of products frequently bought together
+WITH product_pairs AS (
+    SELECT
+        LEAST(o1.product_id, o2.product_id) AS product_id1,
+        GREATEST(o1.product_id, o2.product_id) AS product_id2
+    FROM
+        ORDERS o1
+        JOIN ORDERS o2 ON o1.order_id = o2.order_id
+        AND o1.product_id < o2.product_id
+),
+pair_frequencies AS (
+    SELECT
+        product_id1,
+        product_id2,
+        COUNT(*) AS frequency
+    FROM
+        product_pairs
+    GROUP BY
+        product_id1,
+        product_id2
+    ORDER BY
+        frequency DESC
+    LIMIT
+        3
+)
+SELECT
+    p1.name || ' ' || p2.name AS product_pair,
+    pf.frequency
+FROM
+    pair_frequencies pf
+    JOIN PRODUCTS p1 ON pf.product_id1 = p1.id
+    JOIN PRODUCTS p2 ON pf.product_id2 = p2.id
+ORDER BY
+    pf.frequency DESC,
+    P1.NAME,
+    P2.NAME;
+
+------------------------------------22--------------------------------
+DROP TABLE IF EXISTS STUDY;
+
+CREATE TABLE STUDY(
+    participant_id INTEGER,
+    ASSIGNMENT INTEGER,
+    OUTCOME INTEGER
+);
+
+INSERT INTO
+    study (participant_id, assignment, outcome)
+VALUES
+    (1, 0, 0),
+    (2, 1, 1),
+    (3, 0, 1),
+    (4, 1, 0),
+    (5, 0, 1),
+    (6, 1, 1),
+    (7, 0, 0),
+    (8, 1, 1),
+    (9, 1, 1);
+
+WITH GROUP1 AS(
+    SELECT
+        *
+    FROM
+        STUDY
+    WHERE
+        STUDY.ASSIGNMENT = 1
+),
+GROUP0 AS(
+    SELECT
+        *
+    FROM
+        STUDY
+    WHERE
+        STUDY.ASSIGNMENT = 0
+),
+AVG_ONE AS (
+    SELECT
+        AVG(OUTCOME) AS AVG1
+    FROM
+        GROUP1
+),
+AVG_ZERO AS (
+    SELECT
+        AVG(OUTCOME) AS AVG0
+    FROM
+        GROUP0
+),
+VARIANCE_ONE AS(
+    SELECT
+        SUM(
+            POW(
+                (
+                    GROUP1.OUTCOME - (
+                        SELECT
+                            *
+                        FROM
+                            AVG_ONE
+                    )
+                ),
+                2
+            )
+        ) /(COUNT(*) -1) AS VARIANCE
+    FROM
+        GROUP1
+),
+VARIANCE_ZERO AS(
+    SELECT
+        SUM(
+            POW(
+                (
+                    GROUP0.OUTCOME - (
+                        SELECT
+                            *
+                        FROM
+                            AVG_ZERO
+                    )
+                ),
+                2
+            )
+        ) /(COUNT(*) -1) AS VARIANCE
+    FROM
+        GROUP0
+),
+STANDARD_ERROR AS(
+    SELECT
+        SQRT(
+            VARIANCE / (
+                SELECT
+                    COUNT(*)
+                FROM
+                    GROUP1
+            ) + (
+                SELECT
+                    *
+                FROM
+                    VARIANCE_ZERO
+            ) / (
+                SELECT
+                    COUNT(*)
+                FROM
+                    GROUP0
+            )
+        )
+    FROM
+        VARIANCE_ONE
+),
+ATE AS (
+    SELECT
+        AVG1 - (
+            SELECT
+                *
+            FROM
+                AVG_ZERO
+        ) AS ATE
+    FROM
+        AVG_ONE
+)
+SELECT
+    ATE.ATE AS POINT_ESTIMATE,
+    ATE.ATE - 1.96 * (
+        SELECT
+            *
+        FROM
+            STANDARD_ERROR
+    ) AS LOWER_BOND,
+    ATE.ATE + 1.96 * (
+        SELECT
+            *
+        FROM
+            STANDARD_ERROR
+    ) AS UPPER_BOND
+FROM
+    ATE;
