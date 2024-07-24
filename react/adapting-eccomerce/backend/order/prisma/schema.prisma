@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model order {
+  id             String           @id @default(dbgenerated("public.uuid_generate_v1()")) @db.Uuid
+  user_id        String           @db.Uuid
+  status         status           @default(OPENED)
+  address        String           @db.Uuid
+  order_products order_products[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model order_products {
+  order_id   String @db.Uuid
+  product_id String @db.Uuid
+  quantity   Int    @db.SmallInt
+  order      order  @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([order_id, product_id])
+}
+
+enum status {
+  DELIVERED
+  OPENED
+  PAYED
+  ON_THE_WAY
+}
