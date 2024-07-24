@@ -1,5 +1,13 @@
 import { Router } from "express";
-import { getAddressesHandler, getUserByIDHandler, loginHandler, registerHandler, removeUserHandler, updateDefaultAddressHandler, updateUserHandler } from "../controllers/userController";
+import {
+  getAddressesHandler,
+  getUserByIDHandler,
+  loginHandler,
+  registerHandler,
+  removeUserHandler,
+  updateDefaultAddressHandler,
+  updateUserHandler,
+} from "../controllers/userController";
 export const userRouter: Router = Router();
 
 userRouter.post("/login", loginHandler);

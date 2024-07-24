@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { createAddress, getAddress, removeAddress } from "../services/addressService";
 import { StatusCodes } from "http-status-codes";
-import { changeAddress } from "../services/userService";
+import { changeAddress } from "../services/addressService";
 
 export const getAddressByIDHandler = async (request: Request, res: Response, next: NextFunction) => {
     try {

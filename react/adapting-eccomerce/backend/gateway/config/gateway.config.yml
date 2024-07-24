@@ -108,8 +108,6 @@ apiEndpoints:
 serviceEndpoints:
   usersService:
     url: "http://localhost:3001/" # URL of your users microservice
-  addressesService:
-    url: "http://localhost:3001/" # URL of your addresses microservice
   productsService:
     url: "http://localhost:3002/" # URL of your products microservice
   ordersService:
@@ -250,7 +248,7 @@ pipelines:
             message: "Create Address request received"
       - proxy:
           action:
-            serviceEndpoint: addressesService
+            serviceEndpoint: usersService
 
   # Pipeline for removing an address
   removeAddressPipeline:
@@ -266,7 +264,7 @@ pipelines:
             message: "Remove Address request received"
       - proxy:
           action:
-            serviceEndpoint: addressesService
+            serviceEndpoint: usersService
 
   # Pipeline for changing an address
   changeAddressPipeline: # New pipeline for changing an address
@@ -282,7 +280,7 @@ pipelines:
             message: "Change Address request received"
       - proxy:
           action:
-            serviceEndpoint: addressesService
+            serviceEndpoint: usersService
 
   # Pipeline for creating a product
   createProductPipeline:

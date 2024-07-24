@@ -6,7 +6,7 @@ import { errorMiddleware } from "./middlewares/errorMiddleware";
 import { addressRouter } from "./routes/addressRouter";
 
 const app = express();
-const PORT = process.env.PORT || 3000; // if env doesn't list a port, default being 3000
+const PORT = process.env.PORT || 3001; // if env doesn't list a port, default being 3000
 
 // Enable all CORS requests
 app.use(cors({

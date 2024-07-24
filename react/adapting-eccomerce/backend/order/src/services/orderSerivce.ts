@@ -51,7 +51,7 @@ export const getProductInOrder = async (order_id: string, product_id: string) =>
     }
     catch (err) {
         if (err instanceof PrismaClientKnownRequestError) {
-            if (err.code = "P2018") {
+            if (err.code == "p2018") {
                 throw new NotFoundError(`product with id: ${product_id} not found`);
             }
         }
@@ -62,7 +62,7 @@ export const deleteProductFromOrder = async (order_id: string, product_id: strin
     try { await removeProductFromOrder(order_id, product_id); }
     catch (err) {
         if (err instanceof PrismaClientKnownRequestError) {
-            if (err.code = "P2018") {
+            if (err.code == "p2018") {
                 throw new NotFoundError(`product with id: ${product_id} or order with id: ${order_id} not found`);
             }
         }
@@ -84,7 +84,7 @@ export const changeOrderStatus = async (order_id: string, order_status: string) 
     }
     catch (err) {
         if (err instanceof PrismaClientKnownRequestError) {
-            if (err.code = "P2018") {
+            if (err.code == "p2018") {
                 throw new NotFoundError("order or status not found");
             }
         }
@@ -116,7 +116,7 @@ export const updateProductAmount = async (order_id: string, product_id: string, 
     }
     catch (err) {
         if (err instanceof PrismaClientKnownRequestError) {
-            if (err.code = "P2018") {
+            if (err.code == "p2018") {
                 throw new NotFoundError(`order with id: ${order_id} not found`);
             }
         }
