@@ -14,7 +14,7 @@ apiEndpoints:
   getAddresses:
     host: "*"
     paths:
-      - "/users/:username/addresses"
+      - "/users/:user_id/addresses"
   removeUser:
     host: "*"
     paths:
@@ -31,6 +31,7 @@ apiEndpoints:
     host: "*"
     paths:
       - "/users/:user_id"
+  
   # Address-related endpoints
   createAddress:
     host: "*"
@@ -39,16 +40,16 @@ apiEndpoints:
   removeAddress:
     host: "*"
     paths:
-      - "/addresses/:address_id"
+      - "/addresses"
   getAddressByID:
     host: "*"
     paths:
-      - "/addresses/:address_id"
-  changeAddress: # New endpoint for changing an address
+      - "/addresses/:id"
+  changeAddress:
     host: "*"
     paths:
       - "/addresses"
-
+  
   # Product-related endpoints
   createProduct:
     host: "*"
@@ -70,7 +71,7 @@ apiEndpoints:
     host: "*"
     paths:
       - "/products"
-
+  
   # Order-related endpoints
   createOrder:
     host: "*"
@@ -108,8 +109,6 @@ apiEndpoints:
 serviceEndpoints:
   usersService:
     url: "http://localhost:3001/" # URL of your users microservice
-  addressesService:
-    url: "http://localhost:3001/" # URL of your addresses microservice
   productsService:
     url: "http://localhost:3002/" # URL of your products microservice
   ordersService:
@@ -188,22 +187,6 @@ pipelines:
           action:
             serviceEndpoint: usersService
 
-  # Pipeline for updating default address
-  updateDefaultAddressPipeline:
-    apiEndpoints:
-      - updateDefaultAddress
-    policies:
-      - cors:
-          action:
-            origin: "*"
-            methods: ["PATCH"]
-      - log:
-          action:
-            message: "Update Default Address request received"
-      - proxy:
-          action:
-            serviceEndpoint: usersService
-
   # Pipeline for updating a user
   updateUserPipeline:
     apiEndpoints:
@@ -216,6 +199,21 @@ pipelines:
       - log:
           action:
             message: "Update User request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService
+  
+  changeAddressPipeline:
+    apiEndpoints:
+      - changeAddress
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["PATCH"]
+      - log:
+          action:
+            message: "change address request received"
       - proxy:
           action:
             serviceEndpoint: usersService
@@ -250,9 +248,10 @@ pipelines:
             message: "Create Address request received"
       - proxy:
           action:
-            serviceEndpoint: addressesService
+            serviceEndpoint: usersService
 
   # Pipeline for removing an address
+  
   removeAddressPipeline:
     apiEndpoints:
       - removeAddress
@@ -261,29 +260,48 @@ pipelines:
           action:
             origin: "*"
             methods: ["DELETE"]
+            allowedHeaders: ["Content-Type", "Authorization"]
+            credentials: true
       - log:
           action:
             message: "Remove Address request received"
       - proxy:
           action:
-            serviceEndpoint: addressesService
+            serviceEndpoint: usersService
 
-  # Pipeline for changing an address
-  changeAddressPipeline: # New pipeline for changing an address
+  updateDefaultAddressPipeline:
     apiEndpoints:
-      - changeAddress
+      - updateDefaultAddress
     policies:
       - cors:
           action:
             origin: "*"
             methods: ["PATCH"]
+            allowedHeaders: ["Content-Type", "Authorization"]
+            credentials: true
       - log:
           action:
-            message: "Change Address request received"
+            message: "Update Default Address request received"
       - proxy:
           action:
-            serviceEndpoint: addressesService
+            serviceEndpoint: usersService
 
+  patchAddressPipeline:
+    apiEndpoints:
+      - patchAddress
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["PATCH"]
+            allowedHeaders: ["Content-Type", "Authorization"]
+            credentials: true
+      - log:
+          action:
+            message: "Patch Address request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService
   # Pipeline for creating a product
   createProductPipeline:
     apiEndpoints:
@@ -491,3 +509,17 @@ pipelines:
       - proxy:
           action:
             serviceEndpoint: ordersService
+  getAddressByIDPipeline:
+    apiEndpoints:
+      - getAddressByID
+    policies:
+      - cors:
+          action:
+            origin: "*"
+            methods: ["GET"]
+      - log:
+          action:
+            message: "Get User Orders request received"
+      - proxy:
+          action:
+            serviceEndpoint: usersService

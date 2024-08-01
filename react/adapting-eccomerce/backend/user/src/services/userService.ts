@@ -10,17 +10,17 @@ import { updateAddress } from "../repositories/addressRepository";
 
 export const login = async (username: string, password: string) => {
     const user = await getUserFromUsernameAndPassword(username, password);
+    if (!user) {
+        throw new NotFoundError("user not found or passwords dont match");
+    }
 
     if (user?.default_address) {
         const address = await getAddress(user.default_address);
         return { id: user.id, first_name: user.first_name, last_name: user.last_name, default_address: address }
     }
 
-    if (!user) {
-        throw new NotFoundError("user not found or passwords dont match");
-    }
-
-    return { id: user.id, first_name: user.first_name, username, last_name: user.last_name, default_address: null };
+    
+    return { id: user.id, first_name: user.first_name, last_name: user.last_name, default_address: null };
 }
 
 export const register = async (username: string, password: string, firstName: string, lastName: string, email: string) => {
@@ -38,10 +38,10 @@ export const register = async (username: string, password: string, firstName: st
     }
 }
 
-export const getAddresses = async (username: string) => {
-    const user = await getUserByUsername(username);
+export const getAddresses = async (id: string) => {
+    const user = await getUserByID(id);
     if (!user) {
-        throw new NotFoundError(`user with username: ${username} not found`);
+        throw new NotFoundError(`user with id: ${id} not found`);
     }
     return user.address;
 }
@@ -50,7 +50,7 @@ export const removeUser = async (user_id: string) => {
     try { await deleteUser(user_id); }
     catch (err) {
         if (err instanceof PrismaClientKnownRequestError) {
-            if (err.code = "P2018") {
+            if (err.code == "p2018") {
                 throw new NotFoundError("userId not found");
             }
         }
@@ -71,7 +71,7 @@ export const updateDefaultAddress = async (user_id: string, default_address: str
     }
     catch (err) {
         if (err instanceof PrismaClientKnownRequestError) {
-            if (err.code = "P2018") {
+            if (err.code == "p2018") {
                 throw new NotFoundError("user or address not found");
             }
         }
@@ -85,7 +85,7 @@ export const patchUser = async (user: Omit<users, 'default_address'>) => {
     }
     catch (err) {
         if (err instanceof PrismaClientKnownRequestError) {
-            if (err.code = "P2018") {
+            if (err.code == "p2018") {
                 throw new NotFoundError(`user with id: ${user.id} not found`);
             }
         }
@@ -100,16 +100,3 @@ export const getUserWithID = async (user_id: string) => {
     return user;
 }
 
-export const changeAddress = async (address: address) => {
-    try {
-        await updateAddress(address);
-    }
-    catch (err) {
-        if (err instanceof PrismaClientKnownRequestError) {
-            if (err.code = "P2018") {
-                throw new NotFoundError(`user with id : ${address.user_id} or address :${address.id} not found`);
-            }
-        }
-        throw err;
-    }
-}

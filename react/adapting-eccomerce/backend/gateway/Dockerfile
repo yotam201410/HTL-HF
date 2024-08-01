@@ -6,4 +6,4 @@ COPY . .
 
 RUN ["npm" ,"i"]
 
-ENTRYPOINT [ "node","server.js"  ]
+ENTRYPOINT [ "npm","run","serve"]

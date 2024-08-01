@@ -5,7 +5,7 @@ import { orderRouter } from "./routes/orderRoutes";
 
 const app = express();
 
-const PORT = process.env.PORT || 3000; // if env doesnt list a port default being 3000
+const PORT = process.env.PORT || 3003; // if env doesnt list a port default being 3000
 
 app.use(loggerMiddleware);
 app.use(express.json());

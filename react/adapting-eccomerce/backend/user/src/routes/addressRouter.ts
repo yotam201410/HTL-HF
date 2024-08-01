@@ -4,5 +4,5 @@ import { changeAddressHandler, createAddressHandler, getAddressByIDHandler, remo
 export const addressRouter = Router();
 addressRouter.get("/:id", getAddressByIDHandler);
 addressRouter.post("/", createAddressHandler);
-addressRouter.delete("/:address_id", removeAddressHandler);
+addressRouter.delete("/", removeAddressHandler);
 addressRouter.patch("/", changeAddressHandler);
