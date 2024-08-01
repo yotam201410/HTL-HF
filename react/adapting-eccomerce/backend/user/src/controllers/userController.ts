@@ -24,7 +24,7 @@ export const registerHandler = async (req: Request, res: Response, next: NextFun
 
 export const getAddressesHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const addresses = await getAddresses(req.params.username);
+        const addresses = await getAddresses(req.params.user_id);
         res.status(StatusCodes.OK).json(addresses)
     }
     catch (err) {

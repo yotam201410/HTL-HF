@@ -10,17 +10,17 @@ import { updateAddress } from "../repositories/addressRepository";
 
 export const login = async (username: string, password: string) => {
     const user = await getUserFromUsernameAndPassword(username, password);
+    if (!user) {
+        throw new NotFoundError("user not found or passwords dont match");
+    }
 
     if (user?.default_address) {
         const address = await getAddress(user.default_address);
         return { id: user.id, first_name: user.first_name, last_name: user.last_name, default_address: address }
     }
 
-    if (!user) {
-        throw new NotFoundError("user not found or passwords dont match");
-    }
-
-    return { id: user.id, first_name: user.first_name, username, last_name: user.last_name, default_address: null };
+    
+    return { id: user.id, first_name: user.first_name, last_name: user.last_name, default_address: null };
 }
 
 export const register = async (username: string, password: string, firstName: string, lastName: string, email: string) => {

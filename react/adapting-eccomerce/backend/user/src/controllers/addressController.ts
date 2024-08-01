@@ -16,8 +16,8 @@ export const getAddressByIDHandler = async (request: Request, res: Response, nex
 
 export const createAddressHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        await createAddress({ user_id: req.body.user_id, full_address: req.body.full_address, country: req.body.country, postal_code: req.body.postal_code })
-        res.status(StatusCodes.CREATED).send("address added successfully");
+        const address = await createAddress({ user_id: req.body.user_id, full_address: req.body.full_address, country: req.body.country, postal_code: req.body.postal_code })
+        res.status(StatusCodes.CREATED).json(address);
     }
     catch (err) {
         next(err);
@@ -25,7 +25,7 @@ export const createAddressHandler = async (req: Request, res: Response, next: Ne
 }
 export const removeAddressHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        await removeAddress(req.params.address_id);
+        await removeAddress(req.body.address_id);
         res.status(StatusCodes.OK).send("address removed successfully");
     }
     catch (err) {
