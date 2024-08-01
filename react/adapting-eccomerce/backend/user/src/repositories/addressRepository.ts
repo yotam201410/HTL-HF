@@ -3,13 +3,15 @@ import { NotFoundError } from "../errors/notFoundError"
 import { prisma } from "../utils/dbClient"
 
 export const getAddressById = async (id: string) => {
+    console.log(id);
+    
     const address = await prisma.address.findFirst({ where: { id } })
 
     return address;
 }
 
 export const addAddress = async (address: Omit<address, "id">) => {
-    await prisma.address.create({ data: address })
+    return await prisma.address.create({ data: address })
 }
 
 export const deleteAddress = async (address_id: string) => {

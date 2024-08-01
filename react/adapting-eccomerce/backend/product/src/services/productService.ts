@@ -15,7 +15,7 @@ export const updateProductPrice = async (productId: string, price: number) => {
     try { await updatePrice(productId, price); }
     catch (err) {
         if (err instanceof PrismaClientKnownRequestError) {
-            if (err.code = "P2018") {
+            if (err.code == "p2018") {
                 throw new NotFoundError(`product with id : ${productId} not found`);
             }
         }
